@@ -12,7 +12,7 @@ io.on('connection', (socket) => {
     console.log('New user connected');
 
     socket.on('message', (msg) => {
-        io.emit('message', msg);
+        io.emit('message', msg); // Broadcast the message to all clients
     });
 
     socket.on('disconnect', () => {
