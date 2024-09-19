@@ -6,14 +6,19 @@ const chatSidebar = document.getElementById('chatSidebar');
 const messagesDiv = document.getElementById('messages');
 const chatInput = document.getElementById('chatInput');
 
+let localStream;
+let peers = {};
+
 chatToggle.addEventListener('click', () => {
     chatSidebar.style.display = chatSidebar.style.display === 'none' ? 'flex' : 'none';
 });
 
+// Request access to the user's webcam and microphone
 navigator.mediaDevices.getUserMedia({ video: true, audio: true })
     .then(stream => {
+        localStream = stream;
         localVideo.srcObject = stream;
-        // Here you'd handle the stream and peers for video calls.
+        socket.emit('join'); // Emit a join event when the user joins
     })
     .catch(err => {
         console.error('Error accessing media devices.', err);
@@ -22,20 +27,19 @@ navigator.mediaDevices.getUserMedia({ video: true, audio: true })
 socket.on('message', (msg) => {
     const messageElement = document.createElement('div');
     const time = new Date().toLocaleTimeString();
-    messageElement.innerHTML = `<strong>${msg.user}:</strong> ${msg.text} <span>${time}</span>`;
+    messageElement.innerHTML = `<strong>User:</strong> ${msg.text} <span>${time}</span>`;
     messagesDiv.appendChild(messageElement);
 });
 
+// Send chat message on 'Enter' key press
 chatInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') {
-        const msg = { user: "User", text: chatInput.value };
+    if (e.key === 'Enter' && chatInput.value) {
+        const msg = { text: chatInput.value };
         socket.emit('message', msg);
         chatInput.value = '';
-
-        // Echo message for demonstration purposes
         const messageElement = document.createElement('div');
         const time = new Date().toLocaleTimeString();
-        messageElement.innerHTML = `<strong>${msg.user}:</strong> ${msg.text} <span>${time}</span>`;
+        messageElement.innerHTML = `<strong>You:</strong> ${msg.text} <span>${time}</span>`;
         messagesDiv.appendChild(messageElement);
     }
 });
